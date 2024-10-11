@@ -2,19 +2,11 @@ package com.alura.agencias.domain;
 
 public class Agencia {
 
-    Agencia(Integer id, String nome, String razaoSocial, String cnpj, Endereco endereco) {
-        this.id = id;
-        this.nome = nome;
-        this.razaoSocial = razaoSocial;
-        this.cnpj = cnpj;
-        this.endereco = endereco;
-    }
-
-    private final Integer id;
-    private final String nome;
-    private final String razaoSocial;
-    private final String cnpj;
-    private final Endereco endereco;
+    private Integer id;
+    private String nome;
+    private String razaoSocial;
+    private String cnpj;
+    private Endereco endereco;
 
     public Integer getId() {
         return id;
