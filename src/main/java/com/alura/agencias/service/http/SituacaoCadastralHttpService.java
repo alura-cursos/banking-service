@@ -1,7 +1,7 @@
 package com.alura.agencias.service.http;
 
 import com.alura.agencias.domain.http.AgenciaHttp;
-import com.alura.agencias.exception.AgenciaNaoAtivaException;
+import com.alura.agencias.exception.AgenciaNaoEncontradaException;
 import io.quarkus.rest.client.reactive.ClientExceptionMapper;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -19,7 +19,7 @@ public interface SituacaoCadastralHttpService {
     @ClientExceptionMapper
     static RuntimeException toThrowable(Response response) {
         if (response.getStatus() == 500) {
-            throw new AgenciaNaoAtivaException();
+            throw new AgenciaNaoEncontradaException();
         }
         return null;
     }
