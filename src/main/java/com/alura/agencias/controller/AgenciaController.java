@@ -17,27 +17,27 @@ public class AgenciaController {
     }
 
     @POST
-    public RestResponse<Agencia> cadastrar(Agencia agencia, @Context UriInfo uriInfo) {
+    public RestResponse<Void> cadastrar(Agencia agencia, @Context UriInfo uriInfo) {
         agenciaService.cadastrar(agencia);
         return RestResponse.created(uriInfo.getAbsolutePathBuilder().build());
     }
 
     @GET
     @Path("{id}")
-    public RestResponse<Agencia> buscarPorId(Long id) {
+    public RestResponse<Agencia> buscarPorId(Integer id) {
         Agencia agencia = this.agenciaService.buscarPorId(id);
         return RestResponse.ok(agencia);
     }
 
     @DELETE
     @Path("{id}")
-    public RestResponse<Void> deletar(Long id) {
+    public RestResponse<Void> deletar(Integer id) {
         this.agenciaService.deletar(id);
         return RestResponse.ok();
     }
 
     @PUT
-    public RestResponse<Agencia> alterar(Agencia agencia) {
+    public RestResponse<Void> alterar(Agencia agencia) {
         this.agenciaService.alterar(agencia);
         return RestResponse.ok();
     }

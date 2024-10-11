@@ -33,17 +33,16 @@ public class AgenciaService {
         }
     }
 
-    public Agencia buscarPorId(Long id) {
-        return agencias.stream().filter(agencia -> agencia.getId().equals(id)).toList().get(0);
+    public Agencia buscarPorId(Integer id) {
+        return agencias.stream().filter(agencia -> agencia.getId().equals(id)).toList().getFirst();
     }
 
-    public void deletar(Long id) {
+    public void deletar(Integer id) {
         agencias.removeIf(agencia -> agencia.getId().equals(id));
     }
 
-    public Agencia alterar(Agencia agencia) {
+    public void alterar(Agencia agencia) {
         deletar(agencia.getId());
         agencias.add(agencia);
-        return agencia;
     }
 }
