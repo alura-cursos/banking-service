@@ -4,6 +4,7 @@ import com.alura.agencias.domain.Agencia;
 import com.alura.agencias.domain.http.AgenciaHttp;
 import com.alura.agencias.exception.AgenciaNaoAtivaException;
 import com.alura.agencias.domain.http.SituacaoCadastral;
+import com.alura.agencias.exception.AgenciaNaoEncontradaException;
 import com.alura.agencias.service.http.SituacaoCadastralHttpService;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -19,14 +20,17 @@ public class AgenciaService {
 
     private final List<Agencia> agencias = new ArrayList<>();
 
-    public Agencia cadastrar(Agencia agencia) {
+    public void cadastrar(Agencia agencia) {
+        try {
             AgenciaHttp agenciaHttp = situacaoCadastralHttpService.buscarPorCnpj(agencia.getCnpj());
-            if (agenciaHttp.getSituacaoCadastral() != SituacaoCadastral.ATIVO) {
-                throw new AgenciaNaoAtivaException();
-            } else {
+            if (agenciaHttp.getSituacaoCadastral() == SituacaoCadastral.ATIVO) {
                 agencias.add(agencia);
+            } else {
+                throw new AgenciaNaoAtivaException();
+            }
+        } catch (AgenciaNaoAtivaException | AgenciaNaoEncontradaException e) {
+            throw e;
         }
-        return agencia;
     }
 
     public Agencia buscarPorId(Long id) {
