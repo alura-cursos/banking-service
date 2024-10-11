@@ -19,7 +19,7 @@ public class AgenciaController {
 
     @POST
     @Transactional
-    public RestResponse<Agencia> cadastrar(Agencia agencia, @Context UriInfo uriInfo) {
+    public RestResponse<Void> cadastrar(Agencia agencia, @Context UriInfo uriInfo) {
         agenciaService.cadastrar(agencia);
         return RestResponse.created(uriInfo.getAbsolutePathBuilder().build());
     }
@@ -41,7 +41,7 @@ public class AgenciaController {
 
     @PUT
     @Transactional
-    public RestResponse<Agencia> alterar(Agencia agencia) {
+    public RestResponse<Void> alterar(Agencia agencia) {
         this.agenciaService.alterar(agencia);
         return RestResponse.ok();
     }
