@@ -20,7 +20,7 @@ public class AgenciaController {
     @POST
     @Transactional
     public RestResponse<Void> cadastrar(Agencia agencia, @Context UriInfo uriInfo) {
-        agenciaService.cadastrar(agencia);
+        this.agenciaService.cadastrar(agencia);
         return RestResponse.created(uriInfo.getAbsolutePathBuilder().build());
     }
 
