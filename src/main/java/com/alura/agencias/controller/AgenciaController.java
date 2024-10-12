@@ -18,7 +18,7 @@ public class AgenciaController {
 
     @POST
     public RestResponse<Void> cadastrar(Agencia agencia, @Context UriInfo uriInfo) {
-        agenciaService.cadastrar(agencia);
+        this.agenciaService.cadastrar(agencia);
         return RestResponse.created(uriInfo.getAbsolutePathBuilder().build());
     }
 
