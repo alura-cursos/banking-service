@@ -18,7 +18,9 @@ public class Agencia {
     @JoinColumn(name = "endereco_id")
     private Endereco endereco;
 
-    public Integer getId() {return id;}
+    public Integer getId() {
+        return id;
+    }
 
     public String getNome() {
         return nome;
