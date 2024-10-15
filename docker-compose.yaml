@@ -1,0 +1,24 @@
+services:
+  otel-collector:
+    image: otel/opentelemetry-collector:latest
+    volumes:
+      - ./otel-config-metrics.yml:/etc/otel/config.yaml
+    command: ["--config", "/etc/otel/config.yaml"]
+    ports:
+      - "4317:4317"  # Porta para receber OTLP
+      - "8888:8888"  # Porta para expor métricas para Prometheus
+    networks:
+      - otel-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yaml
+    ports:
+      - "9090:9090"  # Porta para acessar o Prometheus
+    networks:
+      - otel-network
+
+networks:
+  otel-network:
+    driver: bridge

@@ -6,6 +6,8 @@ import com.alura.agencias.domain.http.SituacaoCadastral;
 import com.alura.agencias.exception.AgenciaNaoAtivaOuNaoEncontradaException;
 import com.alura.agencias.repository.AgenciaRepository;
 import com.alura.agencias.service.http.SituacaoCadastralHttpService;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -14,9 +16,14 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 public class AgenciaService {
 
     private final AgenciaRepository agenciaRepository;
+    private final LongCounter counter;
 
-    AgenciaService(AgenciaRepository agenciaRepository) {
+    AgenciaService(AgenciaRepository agenciaRepository, Meter meter) {
         this.agenciaRepository = agenciaRepository;
+        this.counter = meter.counterBuilder("agencia_nao_cadastrada")
+                .setDescription("Quantidade de erros ao cadastrar agencia")
+                .setUnit("invocations")
+                .build();
     }
 
     @RestClient
@@ -28,6 +35,7 @@ public class AgenciaService {
             Log.info("Agencia com CNPJ " + agencia.getCnpj() + " foi adicionada");
             agenciaRepository.persist(agencia);
         } else {
+            counter.add(1);
             Log.info("Agencia com CNPJ " + agencia.getCnpj() + " não ativa ou não encontrada");
             throw new AgenciaNaoAtivaOuNaoEncontradaException();
         }
