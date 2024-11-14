@@ -6,8 +6,8 @@ import com.alura.agencias.domain.http.AgenciaHttp;
 
 public class AgenciaFixture {
 
-    public static AgenciaHttp criarAgenciaHttp() {
-        return new AgenciaHttp("Agencia Teste", "Razao social da Agencia Teste", "123", "ATIVO");
+    public static AgenciaHttp criarAgenciaHttp(String status) {
+        return new AgenciaHttp("Agencia Teste", "Razao social da Agencia Teste", "123", status);
     }
 
     public static Agencia criarAgencia() {
