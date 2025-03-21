@@ -32,11 +32,11 @@ public class AgenciaService {
     public Uni<Void> cadastrar(Agencia agencia) {
         Uni<AgenciaHttp> agenciaHttp = situacaoCadastralHttpService.buscarPorCnpj(agencia.getCnpj());
         return agenciaHttp
-                .onItem().ifNull().failWith(new AgenciaNaoAtivaOuNaoEncontradaException()) // Adiciona tratamento para null
-                .onItem().transformToUni(item -> persistirSeExisteOuEstaAtiva(agencia, item));
+                .onItem().ifNull().failWith(new AgenciaNaoAtivaOuNaoEncontradaException())
+                .onItem().transformToUni(item -> persistirSeEstaAtiva(agencia, item));
     }
 
-    private Uni<Void> persistirSeExisteOuEstaAtiva(Agencia agencia,AgenciaHttp agenciaHttp) {
+    private Uni<Void> persistirSeEstaAtiva(Agencia agencia,AgenciaHttp agenciaHttp) {
         if(agenciaHttp.getSituacaoCadastral().equals(SituacaoCadastral.ATIVO)) {
             this.meterRegistry.counter("agencia_adicionada_count").increment();
             Log.info("Agencia com CNPJ " + agencia.getCnpj() + " foi adicionada");
