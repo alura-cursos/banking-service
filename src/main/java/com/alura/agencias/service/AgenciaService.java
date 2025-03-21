@@ -12,6 +12,8 @@ import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.quarkus.logging.Log;
 import io.smallrye.mutiny.Uni;
 import jakarta.enterprise.context.ApplicationScoped;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 @ApplicationScoped
@@ -29,11 +31,18 @@ public class AgenciaService {
     SituacaoCadastralHttpService situacaoCadastralHttpService;
 
     @WithTransaction
+    @Fallback(fallbackMethod = "chamarFallback")
+    @CircuitBreaker(requestVolumeThreshold = 5)
     public Uni<Void> cadastrar(Agencia agencia) {
         Uni<AgenciaHttp> agenciaHttp = situacaoCadastralHttpService.buscarPorCnpj(agencia.getCnpj());
         return agenciaHttp
                 .onItem().ifNull().failWith(new AgenciaNaoAtivaOuNaoEncontradaException())
                 .onItem().transformToUni(item -> persistirSeEstaAtiva(agencia, item));
+    }
+
+    public Uni<Void> chamarFallback(Agencia agencia) {
+        Log.info("Agência " + agencia.getCnpj() + " não cadastrada, pois um erro ocorreu");
+        return Uni.createFrom().nullItem();
     }
 
     private Uni<Void> persistirSeEstaAtiva(Agencia agencia,AgenciaHttp agenciaHttp) {
