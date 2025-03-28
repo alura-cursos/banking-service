@@ -34,5 +34,5 @@ spec:
         - name: postgres-storage
           emptyDir: {}
         - name: init-scripts
-          hostPath:
-            path: /Users/jv.martins/Documents/workspace/banking-service/init.sql
+          configMap:
+            name: postgres-init-scripts

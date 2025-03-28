@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: banking-service
-          image: joao0212/banking-service:v5
+          image: joao0212/banking-service:v6
           ports:
             - containerPort: 8080
           env:
