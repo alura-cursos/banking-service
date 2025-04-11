@@ -33,6 +33,10 @@ spec:
               value: "postgres"
             - name: QUARKUS_DATASOURCE_PORT
               value: "5432"
+            - name: QUARKUS_CLIENT_HTTP
+              value: "banking-validation-service"
+            - name: QUARKUS_CLIENT_HTTP_PORT
+              value: "8181"
 
 ---
 apiVersion: v1
@@ -44,6 +48,7 @@ spec:
   selector:
     app: banking-service
   ports:
-    - protocol: TCP
-      port: 8080
-  type: LoadBalancer
+    - port: 8080
+      targetPort: 8080
+      nodePort: 30001
+  type: NodePort
