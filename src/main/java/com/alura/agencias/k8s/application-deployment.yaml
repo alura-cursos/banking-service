@@ -22,9 +22,9 @@ spec:
             - containerPort: 8080
           env:
             - name: QUARKUS_KAFKA_SERVER
-              value: "confluent-operator.banking-service.svc.cluster.local"
+              value: "kafka"
             - name: QUARKUS_KAFKA_PORT
-              value: "7778"
+              value: "9092"
             - name: QUARKUS_DATASOURCE_USERNAME
               value: "joao"
             - name: QUARKUS_DATASOURCE_PASSWORD
