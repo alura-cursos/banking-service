@@ -9,6 +9,7 @@ import com.alura.agencias.service.AgenciaService;
 import com.alura.agencias.service.http.SituacaoCadastralHttpService;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
+import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.Assertions;
@@ -49,11 +50,11 @@ public class AgenciaServiceTest {
     }
 
     private Agencia criarAgencia() {
-        Endereco endereco = new Endereco(1, "Rua de teste", "Logradouro de teste", "Complemento de teste", 1);
-        return new Agencia(1, "Agencia Teste", "Razao social da Agencia Teste", "123", endereco);
+        Endereco endereco = new Endereco(1L, "Rua de teste", "Logradouro de teste", "Complemento de teste", 1);
+        return new Agencia(1L, "Agencia Teste", "Razao social da Agencia Teste", "123", endereco);
     }
 
-    private AgenciaHttp criarAgenciaHttp() {
-        return new AgenciaHttp("Agencia Teste", "Razao social da Agencia Teste", "123", "ATIVO");
+    private Uni<AgenciaHttp> criarAgenciaHttp() {
+        return Uni.createFrom().item(new AgenciaHttp("Agencia Teste", "Razao social da Agencia Teste", "123", "ATIVO"));
     }
 }

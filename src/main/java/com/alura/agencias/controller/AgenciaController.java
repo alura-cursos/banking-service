@@ -33,7 +33,7 @@ public class AgenciaController {
 
     @DELETE
     @Path("{id}")
-    @Transactional
+    @Transactional // to do -> com o withTransaction na service e sem o transactional e se eu tiver o transactional na service, preciso de algo no repository?
     public RestResponse<Void> deletar(Long id) {
         this.agenciaService.deletar(id);
         return RestResponse.ok();
