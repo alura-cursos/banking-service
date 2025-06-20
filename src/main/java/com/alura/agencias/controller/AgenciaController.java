@@ -2,7 +2,8 @@ package com.alura.agencias.controller;
 
 import com.alura.agencias.domain.Agencia;
 import com.alura.agencias.service.AgenciaService;
-import jakarta.transaction.Transactional;
+import io.smallrye.common.annotation.NonBlocking;
+import io.smallrye.mutiny.Uni;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.UriInfo;
@@ -18,31 +19,31 @@ public class AgenciaController {
     }
 
     @POST
-    @Transactional
-    public RestResponse<Void> cadastrar(Agencia agencia, @Context UriInfo uriInfo) {
-        this.agenciaService.cadastrar(agencia);
-        return RestResponse.created(uriInfo.getAbsolutePathBuilder().build());
+    @NonBlocking
+    public Uni<RestResponse<Void>> cadastrar(Agencia agencia, @Context UriInfo uriInfo) {
+        return this.agenciaService.cadastrar(agencia)
+                .replaceWith(RestResponse.created(uriInfo.getAbsolutePathBuilder().build()));
     }
 
     @GET
+    @NonBlocking
     @Path("{id}")
-    public RestResponse<Agencia> buscarPorId(Long id) {
-        Agencia agencia = this.agenciaService.buscarPorId(id);
-        return RestResponse.ok(agencia);
+    public Uni<RestResponse<Agencia>> buscarPorId(Long id) {
+        return this.agenciaService.buscarPorId(id)
+                .onItem()
+                .transform(RestResponse::ok);
     }
 
     @DELETE
+    @NonBlocking
     @Path("{id}")
-    @Transactional // to do -> com o withTransaction na service e sem o transactional e se eu tiver o transactional na service, preciso de algo no repository?
-    public RestResponse<Void> deletar(Long id) {
-        this.agenciaService.deletar(id);
-        return RestResponse.ok();
+    public Uni<RestResponse<Void>> deletar(Long id) {
+        return this.agenciaService.deletar(id).replaceWith(RestResponse.ok());
     }
 
     @PUT
-    @Transactional
-    public RestResponse<Void> alterar(Agencia agencia) {
-        this.agenciaService.alterar(agencia);
-        return RestResponse.ok();
+    @NonBlocking
+    public Uni<RestResponse<Void>> alterar(Agencia agencia) {
+        return this.agenciaService.alterar(agencia).replaceWith(RestResponse.ok());
     }
 }

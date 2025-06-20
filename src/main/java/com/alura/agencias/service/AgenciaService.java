@@ -33,19 +33,24 @@ public class AgenciaService {
     public Uni<Void> cadastrar(Agencia agencia) {
         Counter counter = this.meterRegistry.counter("agencia_nao_adicionada_count");
         return situacaoCadastralHttpService.buscarPorCnpj(agencia.getCnpj())
-                .onItem().ifNull().failWith(new AgenciaNaoAtivaOuNaoEncontradaException()).log("Agencia com CNPJ " + agencia.getCnpj() + " foi encontrada").invoke(t -> counter.increment())
-                .onItem().transformToUni(agenciaHttpTransformada -> persistirSeEstaAtiva(agenciaHttpTransformada, agencia, counter));
+                .onItem()
+                    .ifNull()
+                    .failWith(new AgenciaNaoAtivaOuNaoEncontradaException())
+                    .invoke(a -> Log.info("Agencia com CNPJ " + a.getCnpj() + " foi encontrada"))
+                    .invoke(t -> counter.increment())
+                .onItem()
+                    .transformToUni(agenciaHttpTransformada -> persistirSeEstaAtiva(agenciaHttpTransformada, agencia));
     }
 
-    private Uni<Void> persistirSeEstaAtiva(AgenciaHttp agenciaHttp, Agencia agencia, Counter counter) {
+    private Uni<Void> persistirSeEstaAtiva(AgenciaHttp agenciaHttp, Agencia agencia) {
         if(agenciaHttp.getSituacaoCadastral().equals(SituacaoCadastral.ATIVO)) {
             return agenciaRepository.persist(agencia)
                     .invoke(t -> this.meterRegistry.counter("agencia_adicionada_count").increment()) // to do -> pesquisar se seria bloqueante e como resolver caso seja
-                    .log("Agencia com CNPJ " + agencia.getCnpj() + " foi adicionada")
+                    .invoke(a -> Log.info("Agencia com CNPJ " + a.getCnpj() + " foi adicionada"))
                     .replaceWithVoid();
         } else {
             Log.info("Agencia com CNPJ " + agencia.getCnpj() + " não ativa"); // to do -> pesquisar aqui tb.
-            counter.increment();
+            this.meterRegistry.counter("agencia_nao_adicionada_count").increment();
             return Uni.createFrom().failure(new AgenciaNaoAtivaOuNaoEncontradaException());
         }
     }
@@ -58,7 +63,7 @@ public class AgenciaService {
     @WithTransaction
     public Uni<Void> deletar(Long id) {
         return agenciaRepository.deleteById(id)
-                .log("A agência foi deletada") // to do -> verificar como poderia usar log level
+                .invoke(a -> Log.info("A agência foi deletada"))// to do -> verificar como poderia usar log level
                 .replaceWithVoid();
     }
 
@@ -70,7 +75,7 @@ public class AgenciaService {
                         agencia.getRazaoSocial(),
                         agencia.getCnpj(),
                         agencia.getId()
-                ).log("A agência com CNPJ " + agencia.getCnpj() + " foi alterada")
+                ).invoke(a -> Log.info("A agência com CNPJ " + agencia.getCnpj() + " foi alterada"))
                 .replaceWithVoid();
     }
 }
