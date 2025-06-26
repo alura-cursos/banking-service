@@ -16,25 +16,23 @@ public class RemoverAgenciaService {
     private final ObjectMapper objectMapper;
     private final AgenciaRepository agenciaRepository;
 
-    public RemoverAgenciaService(ObjectMapper objectMapper, AgenciaRepository agenciaRepository) {
-        this.objectMapper = objectMapper;
+    public RemoverAgenciaService(AgenciaRepository agenciaRepository) {
+        this.objectMapper = new ObjectMapper();
         this.agenciaRepository = agenciaRepository;
     }
 
     @WithTransaction
     @Incoming("remover-agencia-channel")
     public Uni<Void> consumirMensagem(String mensagem) {
-        return Uni.createFrom().deferred(() -> {
-            try {
-                Log.info(mensagem);
-                AgenciaMessage agenciaMessage = objectMapper.readValue(mensagem, AgenciaMessage.class);
-                return agenciaRepository.findByCnpj(agenciaMessage.getCnpj())
-                        .onItem().ifNotNull().transformToUni(agencia ->
-                                        agenciaRepository.deleteById(agencia.getId())
-                        ).replaceWithVoid();
-            } catch (JsonProcessingException e) {
-                return Uni.createFrom().failure(e);
-            }
-        });
+        try {
+            Log.info(mensagem);
+            AgenciaMessage agenciaMessage = objectMapper.readValue(mensagem, AgenciaMessage.class);
+            return agenciaRepository.findByCnpj(agenciaMessage.getCnpj())
+                    .onItem().ifNotNull().transformToUni(agencia ->
+                            agenciaRepository.deleteById(agencia.getId())
+                    ).replaceWithVoid();
+        } catch (JsonProcessingException e) {
+            return Uni.createFrom().failure(e);
+        }
     }
 }
