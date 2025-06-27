@@ -1,8 +1,8 @@
 package com.alura.agencias.service.messaging;
 
+import br.com.alura.Agencia;
 import com.alura.agencias.domain.messaging.AgenciaMessage;
 import com.alura.agencias.repository.AgenciaRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.quarkus.logging.Log;
@@ -23,15 +23,18 @@ public class RemoverAgenciaService {
 
     @WithTransaction
     @Incoming("remover-agencia-channel")
-    public Uni<Void> consumirMensagem(String mensagem) {
+    public Uni<Void> consumirMensagem(Agencia mensagem) {
         try {
             Log.info(mensagem);
-            AgenciaMessage agenciaMessage = objectMapper.readValue(mensagem, AgenciaMessage.class);
+            //AgenciaMessage agenciaMessage = objectMapper.readValue(mensagem, AgenciaMessage.class);
+            AgenciaMessage agenciaMessage = new AgenciaMessage(
+                    1, mensagem.getNome(), mensagem.getRazaoSocial(), mensagem.getCnpj(), mensagem.getSituacaoCadastral()
+            );
             return agenciaRepository.findByCnpj(agenciaMessage.getCnpj())
                     .onItem().ifNotNull().transformToUni(agencia ->
                             agenciaRepository.deleteById(agencia.getId())
                     ).replaceWithVoid();
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             return Uni.createFrom().failure(e);
         }
     }
