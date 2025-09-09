@@ -10,9 +10,6 @@ import com.alura.agencias.service.http.SituacaoCadastralHttpService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.opentelemetry.api.trace.Span;
-import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Scope;
 import io.quarkus.hibernate.reactive.panache.common.WithSession;
 import io.quarkus.hibernate.reactive.panache.common.WithTransaction;
 import io.quarkus.logging.Log;
@@ -27,14 +24,12 @@ public class AgenciaService {
     private final MeterRegistry meterRegistry;
     private final RedisCacheService redisCacheService;
     private final ObjectMapper objectMapper;
-    private final Tracer tracer;
 
-    AgenciaService(AgenciaRepository agenciaRepository, MeterRegistry meterRegistry, RedisCacheService redisCacheService, Tracer tracer) {
+    AgenciaService(AgenciaRepository agenciaRepository, MeterRegistry meterRegistry, RedisCacheService redisCacheService) {
         this.agenciaRepository = agenciaRepository;
         this.meterRegistry = meterRegistry;
         this.redisCacheService = redisCacheService;
         this.objectMapper = new ObjectMapper();
-        this.tracer = tracer;
     }
 
     @RestClient
@@ -42,22 +37,12 @@ public class AgenciaService {
 
     @WithTransaction // to do -> usando o hibernate sem panache ainda precisaria manter a transação aberta com o @WithTransaction
     public Uni<Void> cadastrar(Agencia agencia) {
-        Span span = tracer.spanBuilder("cadastrarAgencia").startSpan();
-        span.setAttribute("agencia.cnpj", agencia.getCnpj());
         Counter counter = this.meterRegistry.counter("agencia_nao_adicionada_count");
         return situacaoCadastralHttpService.buscarPorCnpj(agencia.getCnpj())
                 .onItem()
                     .ifNull().failWith(new AgenciaNaoAtivaOuNaoEncontradaException())
                     .invoke(a -> Log.info("Agencia com CNPJ " + a.getCnpj() + " foi encontrada"))
                     .invoke(t -> counter.increment())
-                    .invoke(a -> {
-                        try(Scope scope = span.makeCurrent()) {
-                            span.addEvent("Agencia encontrada");
-                            span.setAttribute("agencia.encontrada", a.getCnpj());
-                        }
-                    }).eventually(() -> {
-                        span.end();
-                })
                 .onItem().transformToUni(agenciaHttpTransformada -> persistirSeEstaAtiva(agenciaHttpTransformada, agencia, counter));
     }
 
