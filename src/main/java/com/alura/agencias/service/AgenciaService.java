@@ -5,9 +5,7 @@ import com.alura.agencias.domain.http.AgenciaHttp;
 import com.alura.agencias.domain.http.SituacaoCadastral;
 import com.alura.agencias.exception.AgenciaNaoAtivaOuNaoEncontradaException;
 import com.alura.agencias.repository.AgenciaRepository;
-import com.alura.agencias.service.cache.RedisCacheService;
 import com.alura.agencias.service.http.SituacaoCadastralHttpService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.quarkus.hibernate.reactive.panache.common.WithSession;
@@ -22,14 +20,10 @@ public class AgenciaService {
 
     private final AgenciaRepository agenciaRepository;
     private final MeterRegistry meterRegistry;
-    private final RedisCacheService redisCacheService;
-    private final ObjectMapper objectMapper;
 
-    AgenciaService(AgenciaRepository agenciaRepository, MeterRegistry meterRegistry, RedisCacheService redisCacheService) {
+    AgenciaService(AgenciaRepository agenciaRepository, MeterRegistry meterRegistry) {
         this.agenciaRepository = agenciaRepository;
         this.meterRegistry = meterRegistry;
-        this.redisCacheService = redisCacheService;
-        this.objectMapper = new ObjectMapper();
     }
 
     @RestClient
@@ -40,9 +34,9 @@ public class AgenciaService {
         Counter counter = this.meterRegistry.counter("agencia_nao_adicionada_count");
         return situacaoCadastralHttpService.buscarPorCnpj(agencia.getCnpj())
                 .onItem()
-                    .ifNull().failWith(new AgenciaNaoAtivaOuNaoEncontradaException())
-                    .invoke(a -> Log.info("Agencia com CNPJ " + a.getCnpj() + " foi encontrada"))
-                    .invoke(t -> counter.increment())
+                .ifNull().failWith(new AgenciaNaoAtivaOuNaoEncontradaException())
+                .invoke(a -> Log.info("Agencia com CNPJ " + a.getCnpj() + " foi encontrada"))
+                .invoke(t -> counter.increment())
                 .onItem().transformToUni(agenciaHttpTransformada -> persistirSeEstaAtiva(agenciaHttpTransformada, agencia, counter));
     }
 
@@ -53,7 +47,7 @@ public class AgenciaService {
                     .invoke(a -> Log.info("Agencia com CNPJ " + agencia.getCnpj() + " foi adicionada"))
                     .replaceWithVoid();
         } else {
-            Log.error("Agencia com CNPJ " + agencia.getCnpj() + " não ativa"); // to do -> pesquisar aqui tb.
+            Log.info("Agencia com CNPJ " + agencia.getCnpj() + " não ativa"); // to do -> pesquisar aqui tb.
             counter.increment();
             return Uni.createFrom().failure(new AgenciaNaoAtivaOuNaoEncontradaException());
         }
@@ -61,44 +55,13 @@ public class AgenciaService {
 
     @WithSession
     public Uni<Agencia> buscarPorId(Long id) {
-        String key = "agencia_" + id;
-        return buscarNoCache(key).onItem().ifNull().switchTo(buscarNoBanco(key, id));
+        return agenciaRepository.findById(id);
     }
-
-    public Uni<Agencia> buscarNoCache(String key) {
-        this.meterRegistry.counter("agencia_busca_cache_count").increment();
-        return redisCacheService.get(key)
-                .onItem().ifNotNull().transform(agencia -> {
-                    try {
-                        Log.info("Agência encontrada no cache");
-                        return objectMapper.readValue(agencia, Agencia.class);
-                    } catch (Exception e) {
-                        Log.error("Objeto não pode ser encontrado");
-                        return null;
-                    }
-                });
-    }
-
-    public Uni<Agencia> buscarNoBanco(String key, Long id) {
-        return agenciaRepository.findById(id)
-                .onItem().ifNotNull().call(agencia -> {
-                    try {
-                        Log.info("Setando informação no cache");
-                        return redisCacheService.set(key, objectMapper.writeValueAsString(agencia), 3600);
-                    } catch (Exception e) {
-                        return Uni.createFrom().failure(e);
-                    }
-                });
-    }
-
 
     @WithTransaction
     public Uni<Void> deletar(Long id) {
-        String key = "agencia_" + id;
-
         return agenciaRepository.deleteById(id)
-                .call(a -> redisCacheService.del(key))
-                .invoke(a -> Log.info("A agência foi deletada"))
+                .invoke(a -> Log.info("A agência foi deletada")) // to do -> verificar como poderia usar log level
                 .replaceWithVoid();
     }
 

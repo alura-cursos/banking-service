@@ -91,10 +91,6 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-confluent-registry-avro</artifactId>
         </dependency>
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-redis-client</artifactId>
-        </dependency>
     </dependencies>
 
     <build>
