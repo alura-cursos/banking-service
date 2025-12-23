@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "Agencia",
+  "namespace": "br.com.alura",
+  "fields": [
+    { "name":  "nome", "type": "string" },
+    { "name":  "razaoSocial", "type": "string" },
+    { "name":  "cnpj", "type": "string" },
+    { "name":  "situacaoCadastral", "type": ["null","string"],
+      "default": null
+    }
+  ]
+}

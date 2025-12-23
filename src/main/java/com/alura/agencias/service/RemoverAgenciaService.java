@@ -12,7 +12,6 @@ import org.eclipse.microprofile.reactive.messaging.Incoming;
 @ApplicationScoped
 public class RemoverAgenciaService {
 
-    private final ObjectMapper objectMapper;
     private final AgenciaRepository agenciaRepository;
 
     public RemoverAgenciaService(AgenciaRepository agenciaRepository) {
@@ -22,10 +21,13 @@ public class RemoverAgenciaService {
 
     @WithTransaction
     @Incoming("remover-agencia-channel")
-    public Uni<Void> consumirMensagem(String mensagem) {
+    public Uni<Void> consumirMensagem(Agencia mensagem) {
         try {
-            Log.info(mensagem);
-            AgenciaMessage agenciaMessage = objectMapper.readValue(mensagem, AgenciaMessage.class);
+            AgenciaMessage agenciaMessage =
+                    new AgenciaMessage(mensagem.getNome(),
+                            mensagem.getRazaoSocial(),
+                            mensagem.getCnpj(),
+                            mensagem.getSituacaoCadastral());
             return agenciaRepository.findByCnpj(agenciaMessage.getCnpj())
                     .onItem().ifNotNull().transformToUni(agencia ->
                             agenciaRepository.deleteById(agencia.getId())
