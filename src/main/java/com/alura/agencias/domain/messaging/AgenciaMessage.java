@@ -2,14 +2,12 @@ package com.alura.agencias.domain.messaging;
 
 public class AgenciaMessage {
 
-    private Integer id;
     private String nome;
     private String razaoSocial;
     private String cnpj;
     private String situacaoCadastral;
 
-    public AgenciaMessage(Integer id, String nome, String razaoSocial, String cnpj, String situacaoCadastral) {
-        this.id = id;
+    public AgenciaMessage(String nome, String razaoSocial, String cnpj, String situacaoCadastral) {
         this.nome = nome;
         this.razaoSocial = razaoSocial;
         this.cnpj = cnpj;
@@ -18,10 +16,6 @@ public class AgenciaMessage {
 
     public AgenciaMessage() {
 
-    }
-
-    public Integer getId() {
-        return id;
     }
 
     public String getNome() {
