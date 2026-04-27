@@ -1,0 +1,31 @@
+services:
+  banking-service:
+    image: joao0212/banking-service:v1
+    container_name: banking-service-container
+    environment:
+      - QUARKUS_CLIENT_HTTP=host.docker.internal
+      - QUARKUS_CLIENT_HTTP_PORT=8181
+      - QUARKUS_DATASOURCE_USERNAME=joao
+      - QUARKUS_DATASOURCE_PASSWORD=joao
+      - QUARKUS_DATASOURCE_HOST=postgres-db-alura-banking-service
+      - QUARKUS_DATASOURCE_PORT=5432
+    ports:
+      - 8080:8080
+    depends_on:
+      - postgres-db-alura-banking-service
+
+  postgres-db-alura-banking-service:
+    image: postgres:14
+    container_name: postgres-db-alura-banking-service-container
+    environment:
+      - POSTGRES_USER=joao
+      - POSTGRES_PASSWORD=joao
+      - POSTGRES_DB=agencia
+    ports:
+      - 5433:5432
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  postgres_data:
+    driver: local
